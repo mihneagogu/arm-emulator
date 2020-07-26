@@ -1,24 +1,38 @@
 /// Macro that panics if the condition is true, with the given message
-macro_rules! panic_msg {
+macro_rules! panic_on {
     ($cond:expr, $msg:tt) => {
         if $cond {
             panic!($msg);
         }
-    }
+    };
 }
 
 /// The state flags of the ARM processor
 #[derive(Debug)]
-enum Flag {
+pub enum Flag {
     N = 0,
     Z = 1,
     C = 2,
     V = 3,
 }
 
+#[warn(non_camel_case_types)]
+pub enum InstructionType {
+    DATA_PROCESS,
+    MULTIPLTY,
+    SINGLE_DATA_TRANSFER,
+    BRANCH,
+}
+
+#[derive(Debug)]
+pub struct Instruction {
+    code: u32,
+    instruction_type: InstructionType,
+}
+
 /// The byte code of the emulator conditions
 #[derive(Debug)]
-enum FlagCodes {
+pub enum FlagCode {
     EQ = 0,
     NE = 1,
     GE = 10,
@@ -40,7 +54,6 @@ pub enum BitPos32 {
 }
 
 impl BitPos32 {
-
     /// Generates a Position from a u8
     ///
     /// # Panics
@@ -58,18 +71,39 @@ impl BitPos32 {
     /// Gets the position from inside the wrapper as an u8
     pub fn to_u8(&self) -> u8 {
         match self {
-            BitPos32::Pos(p) => *p
+            BitPos32::Pos(p) => *p,
         }
     }
-
 }
 
+/// Gives back the bits from start_pos until end_pos (both inclusive)
+/// Shifted to the right, so it's readable
 #[inline]
 pub fn process_mask(n: u32, start_pos: BitPos32, end_pos: BitPos32) -> u32 {
     let end_pos = end_pos.to_u8();
     let start_pos = start_pos.to_u8();
     let mask: u32 = 1 << (end_pos + 1 - start_pos) - 1;
     (n >> start_pos) & mask
+}
+
+/// The pipeline struct
+#[derive(Debug)]
+pub struct Pipe {
+    executing: Option<Box<Instruction>>,
+    decoding: Option<Box<Instruction>>,
+    fetching: u32,
+}
+
+impl Pipe {
+    pub fn init(cpu: &mut CpuState) -> Self {
+        cpu.increment_pc();
+        Self {
+            executing: None,
+            decoding: None,
+            // TODO: Implement CpuState::fetch()
+            fetching: 0,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -86,6 +120,37 @@ impl CpuState {
         Self {
             registers: Box::new([0; REGISTERS_NO]),
             memory: Box::new([0; MEMORY_SIZE]),
+        }
+    }
+
+    /// Gets the CPSR status for the given flag
+    fn get_flag(&self, flag: Flag) -> bool {
+        let mask: u32 = 1 << (MAX_BIT_INDEX - flag as u8);
+        // Parantheses probably not needed, added for good measure
+        (self.registers[CPSR] & mask) != 0
+    }
+
+    /// Checks if the CPSR condition meets the flag requirements
+    pub fn check_CPSR_cond(&self, flag_code: FlagCode) -> bool {
+        match flag_code {
+            // Equal
+            FlagCode::EQ => self.get_flag(Flag::Z),
+            // Not equal
+            FlagCode::NE => !self.get_flag(Flag::Z),
+            // Greater than or equal
+            FlagCode::GE => self.get_flag(Flag::N) == self.get_flag(Flag::V),
+            // Less than
+            FlagCode::LT => self.get_flag(Flag::N) != self.get_flag(Flag::V),
+            // Greater than
+            FlagCode::GT => {
+                !self.get_flag(Flag::Z) && (self.get_flag(Flag::N) == self.get_flag(Flag::V))
+            }
+            // Less than or equal
+            FlagCode::LE => {
+                self.get_flag(Flag::Z) || (self.get_flag(Flag::N) != self.get_flag(Flag::V))
+            }
+            // Always true
+            FlagCode::AL => true,
         }
     }
 
