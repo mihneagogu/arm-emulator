@@ -30,7 +30,6 @@ pub enum InstructionType {
 
 impl Eq for InstructionType {}
 
-
 #[derive(Debug)]
 pub struct Instruction {
     pub code: u32,
@@ -38,8 +37,7 @@ pub struct Instruction {
 }
 
 /// The byte code of the emulator conditions
-#[derive(FromPrimitive)]
-#[derive(Debug)]
+#[derive(FromPrimitive, Debug)]
 pub enum FlagCode {
     EQ = 0,
     NE = 1,
@@ -114,6 +112,18 @@ impl Pipe {
             // TODO: Implement CpuState::fetch()
             fetching: 0,
         }
+    }
+
+    pub fn clear_executing(&mut self) {
+        self.executing = None;
+    }
+
+    pub fn clear_decoding(&mut self) {
+        self.decoding = None;
+    }
+
+    pub fn clear_fetching(&mut self) {
+        self.fetching = 0;
     }
 }
 

@@ -1,6 +1,8 @@
 mod em_utilities;
 use em_utilities::*;
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -24,17 +26,29 @@ fn execute_instr(instr: Instruction, cpu: &mut CpuState, pipe: &mut Pipe) {
         None => return, // Exit, must have gotten a wrong bit-mask, can be unreachable!()
     };
 
-    // Map for executing jj
-    let mut executors: HashMap<InstructionType, Box<dyn FnOnce()>> = HashMap::new();
-    executors.insert(InstructionType::BRANCH, Box::new( || {
-   
-    }));
+    // Alternatively could have made a Hashmap containg the instruciton types and closures for
+    // execution
+    // Managed to store them using Rc<RefCell<Box<dyn FnOnce()>>> for the functions
+    // but getting the closures to execute was harder
+    // This solution works just fine albeit less advanced and more C-like
+    match instr.instruction_type {
+        InstructionType::BRANCH => {
+            // check whether branch succeeded
+        }
+        InstructionType::DATA_PROCESS => {
+            // execute data processing instruction
+            pipe.clear_executing();
+        },
+        InstructionType::MULTIPLTY => {
+            // execute multiply instruction 
+            pipe.clear_executing();
+        },
+        InstructionType::SINGLE_DATA_TRANSFER => {
+            // execute multiply instruction 
+            pipe.clear_executing();
+        },
 
-
-    executors.insert(InstructionType::MULTIPLTY, Box::new( || {
-   
-    }));
-
+    }
 }
 
 /// Helper function that helps with checking which instruction type
