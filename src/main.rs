@@ -1,6 +1,9 @@
 use std::process::exit;
 use std::{env, fs};
 
+#[path = "emulator/pipeline_executor.rs"]
+mod pipeline_executor;
+
 /// Println!'s a statement
 /// with the given format if the program is run in debug mode
 macro_rules! debug_println {
@@ -50,6 +53,7 @@ fn assemble(asm_path: &str, out_path: &str) -> Result<(), std::io::Error> {
 /// Propagates std::io::Error to `main` if the file path is invalid
 fn emulate(path: &str) -> Result<(), std::io::Error> {
     let instructions = std::fs::read(path)?;
+
     if instructions.len() % 4 != 0 {
         panic!("Binary file has a number of bytes undivisible by 4");
     }
@@ -62,6 +66,7 @@ fn emulate(path: &str) -> Result<(), std::io::Error> {
     let mut u32_instructions: Vec<u32> = Vec::with_capacity(instructions.len() % 4);
     let mut first = true;
 
+    // Parses the instruction from the binary file
     for b in &instructions {
         if counter % 4 == 0 && !first {
             // Index it in little endian
@@ -75,7 +80,9 @@ fn emulate(path: &str) -> Result<(), std::io::Error> {
         counter += 1;
     }
 
+    // Just shadowing the `instruction` variable
     let instructions = u32_instructions;
+
     if cfg!(debug_assertions) {
         print!("Binary instructions as little endian u32: ");
         print!("[");
@@ -84,6 +91,10 @@ fn emulate(path: &str) -> Result<(), std::io::Error> {
         }
         println!("]");
     }
+
+    // Starts the emulation process
+    pipeline_executor::emulate(instructions);
+
     Ok(())
 }
 
@@ -93,16 +104,20 @@ fn assert_cmd_line_params(args: &[String]) -> Task {
         panic!("You gave me a wrong command format, please check the documentation!");
     }
 
-    if &args[1] == "emulate" {
-        return Task::Emulate(&args[2]);
+    let TASK_INDEX: usize= 1;
+    let FILE_PATH_INDEX: usize = 2;
+    let OUT_PATH_INDEX: usize = 3;
+
+    if &args[TASK_INDEX] == "emulate" {
+        return Task::Emulate(&args[FILE_PATH_INDEX]);
     }
-    if &args[1] == "assemble" {
+    if &args[TASK_INDEX] == "assemble" {
         if args.len() != 4 {
             panic!("Wrong assemble information! Please use `assemble <asm-path> <output-path>`");
         }
         return Task::Assemble {
-            asm_path: &args[2],
-            out_path: &args[3],
+            asm_path: &args[FILE_PATH_INDEX],
+            out_path: &args[OUT_PATH_INDEX],
         };
     }
     panic!("The first argument must be either `emulate` or `assemble`");
