@@ -41,29 +41,33 @@ impl CpuState {
         }
     }
 
-    /// Pretty prints the registers 
+    /// Pretty prints the registers
     pub fn print_registers(&self) {
         let registers = &*self.registers;
 
         println!("Registers:");
         for (ind, reg) in registers.iter().enumerate() {
-            match ind {
+            let identifier = match ind {
                 // Unused registers
                 13 | 14 => continue,
                 PC => {
-                    println!("$PC:    (0x{:0>8x})", reg);
+                    String::from("$PC:   ")
+                    //println!("$PC:    (0x{:0>8x})", reg);
                 }
                 CPSR => {
-                    println!("$CPSR:  (0x{:0>8x})", reg);
+                    String::from("$CPSR: ")
+                    //println!("$CPSR:  (0x{:0>8x})", reg);
                 }
                 n if n < 10 => {
-                    println!("${}:     (0x{:0>8x})", ind, reg);
+                    format!("${}     ", ind)
+                    //println!("${}:     (0x{:0>8x})", ind, reg);
                 }
                 _ => {
-                    println!("${}:    (0x{:0>8x})", ind, reg);
-
+                    format!("${}    ", ind)
+                    //println!("${}:    (0x{:0>8x})", ind, reg);
                 }
             };
+            println!("{}(0x{:0>8x})", identifier, reg);
         }
     }
 }
