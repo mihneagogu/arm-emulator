@@ -17,6 +17,7 @@ pub enum Flag {
 }
 
 #[warn(non_camel_case_types)]
+#[derive(Debug)]
 pub enum InstructionType {
     DATA_PROCESS,
     MULTIPLTY,
