@@ -1,3 +1,6 @@
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
+
 /// Macro that panics if the condition is true, with the given message
 macro_rules! panic_on {
     ($cond:expr, $msg:tt) => {
@@ -8,7 +11,7 @@ macro_rules! panic_on {
 }
 
 /// The state flags of the ARM processor
-#[derive(Debug)]
+#[derive(Debug, FromPrimitive)]
 pub enum Flag {
     N = 0,
     Z = 1,
@@ -17,7 +20,7 @@ pub enum Flag {
 }
 
 #[warn(non_camel_case_types)]
-#[derive(Debug)]
+#[derive(Debug, Hash, PartialEq)]
 pub enum InstructionType {
     DATA_PROCESS,
     MULTIPLTY,
@@ -25,13 +28,17 @@ pub enum InstructionType {
     BRANCH,
 }
 
+impl Eq for InstructionType {}
+
+
 #[derive(Debug)]
 pub struct Instruction {
-    code: u32,
-    instruction_type: InstructionType,
+    pub code: u32,
+    pub instruction_type: InstructionType,
 }
 
 /// The byte code of the emulator conditions
+#[derive(FromPrimitive)]
 #[derive(Debug)]
 pub enum FlagCode {
     EQ = 0,
@@ -96,6 +103,9 @@ pub struct Pipe {
 }
 
 impl Pipe {
+    /// The pipeline lag is 8 bytes (aka 2 instructions)
+    /// because of the pipeline execution cycle
+    const PIPE_LAG: u8 = 8;
     pub fn init(cpu: &mut CpuState) -> Self {
         cpu.increment_pc();
         Self {
