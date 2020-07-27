@@ -1,5 +1,7 @@
-use crate::emulator::{em_utilities as util, barrel_shifter};
+use crate::emulator::{em_utilities as util, barrel_shifter as shifter};
 use util::*;
+use shifter::*;
+
 
 
 /// Returns whether the immediate is enabled for the given instruction
@@ -43,9 +45,9 @@ fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
     // Compute operand2
     if immediate_enabled(bits) {
         operand2 = process_mask(bits, bp32![0], bp32![7]);
-        // TODO:  operand_2 = rotate_right(operand_2, process_mask(instr->code, 8, 11) * 2);
+        operand2 = rotate_right(operand2, process_mask(bits, bp32![8], bp32![11]) * 2);
         c_bit = ((operand2 >> (process_mask(bits, bp32![8], bp32![11]) * 2)) as u8) & 1;
     } else {
-        // TODO: operand_2 = reg_offset_shift(cpu_state, instr, &c_bit);
+        operand2 = reg_offset_shift(cpu, &instr, &mut c_bit);
     }
 }

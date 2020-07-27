@@ -12,11 +12,6 @@ pub enum ShiftOp {
     ROR = 3,
 }
 
-macro_rules! mask {
-    ($bits:expr, $start:expr, $end:expr) => {
-        process_mask($bits, bp32![$start], bp32![$end])
-    }
-}
 
 fn shifted_reg_m_bits(bits: u32) -> u32 {
     process_mask(bits, bp32![0], bp32![3])
@@ -64,7 +59,7 @@ fn execute_shift(operand: u32, shift_amount: u32, shift_opcode: ShiftOp,
     result
 }
 
-pub fn reg_offset_shift(cpu: &CpuState, instr: &mut Instruction, mut c_bit: u8) -> u32 {
+pub fn reg_offset_shift(cpu: &CpuState, instr: &Instruction, c_bit: &mut u8) -> u32 {
     let mut result: u32 = 0;
     let bits = instr.code;
     let reg_contents: u32 = cpu.registers[shifted_reg_m_bits(bits) as usize];
@@ -73,24 +68,24 @@ pub fn reg_offset_shift(cpu: &CpuState, instr: &mut Instruction, mut c_bit: u8) 
         let lower_byte: u8 = cpu.registers[shift_register_bits(bits) as usize] as u8;
         let shift_type = shift_type_bits(bits);
         let shift_type = FromPrimitive::from_u32(shift_type).unwrap();
-        result = execute_shift(reg_contents, lower_byte as u32, shift_type, &mut c_bit);
+        result = execute_shift(reg_contents, lower_byte as u32, shift_type, c_bit);
     } else {
         let shift_type = shift_type_bits(bits);
         let shift_type = FromPrimitive::from_u32(shift_type).unwrap();
-        result = execute_shift(reg_contents, shift_constant_bits(bits), shift_type, &mut c_bit);
+        result = execute_shift(reg_contents, shift_constant_bits(bits), shift_type, c_bit);
     }
 
     result
 }
 
-fn rotate_right(operand: u32, rotate_amount: u32) -> u32 {
+pub fn rotate_right(operand: u32, rotate_amount: u32) -> u32 {
     let mut result: u32 = operand >> rotate_amount;
     result |= operand << (32 - rotate_amount);
 
     result
 }
 
-fn arithmetic_shift_right(operand: u32, shift_amount: u32) -> u32 {
+pub fn arithmetic_shift_right(operand: u32, shift_amount: u32) -> u32 {
     let mut result: u32 = 0;
     if ((1 << 31) & operand) != 0 {
         // MSB is 1

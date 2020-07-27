@@ -1,6 +1,13 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
+/// Macro used for masking, just a shorthand
+macro_rules! mask {
+    ($bits:expr, $start:expr, $end:expr) => {
+        process_mask($bits, bp32![$start], bp32![$end])
+    }
+}
+
 /// Macro that panics if the condition is true, with the given message
 macro_rules! panic_on {
     ($cond:expr, $msg:tt) => {
