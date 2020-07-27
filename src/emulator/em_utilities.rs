@@ -10,6 +10,18 @@ macro_rules! panic_on {
     };
 }
 
+macro_rules! bp32 {
+    ($pos:expr) => {{
+        BitPos32::from_u8($pos)
+    }};
+}
+/// Uses the bp32![] macro to make a BitPos32
+/// (I'm not exporting the macro properly so it will stay
+/// as a function for now)
+pub fn bp32(pos: u8) -> BitPos32 {
+    BitPos32::from_u8(pos)
+}
+
 /// The state flags of the ARM processor
 #[derive(Debug, FromPrimitive)]
 pub enum Flag {
@@ -114,7 +126,6 @@ impl Pipe {
         Self {
             executing: None,
             decoding: None,
-            // TODO: Implement CpuState::fetch()
             fetching: 0,
         }
     }
@@ -144,8 +155,8 @@ impl Pipe {
 
 #[derive(Debug)]
 pub struct CpuState {
-    registers: Box<[u32]>,
-    memory: Box<[u8]>,
+    pub registers: Box<[u32]>,
+    pub memory: Box<[u8]>,
 }
 
 impl CpuState {
@@ -171,22 +182,19 @@ impl CpuState {
 
     /// Indexes in little endian an instruction from memory
     fn index_little_endian(&self, ptr: usize) -> u32 {
-        self.memory[ptr] as u32 |
-            ( self.memory[ptr + 1] as u32 ) << 8 |
-            ( self.memory[ptr + 2] as u32 ) << 16 |
-            ( self.memory[ptr + 3] as u32 ) << 24 
-
+        self.memory[ptr] as u32
+            | (self.memory[ptr + 1] as u32) << 8
+            | (self.memory[ptr + 2] as u32) << 16
+            | (self.memory[ptr + 3] as u32) << 24
     }
 
     /// Indexes in big endian an instruction from memory
     fn index_big_endian(&self, ptr: usize) -> u32 {
-        ( self.memory[ptr] as u32 ) << 24 |
-            ( self.memory[ptr + 1] as u32 ) << 16 |
-            ( self.memory[ptr + 2] as u32 ) << 8 |
-            ( self.memory[ptr + 3] as u32 ) 
-
+        (self.memory[ptr] as u32) << 24
+            | (self.memory[ptr + 1] as u32) << 16
+            | (self.memory[ptr + 2] as u32) << 8
+            | (self.memory[ptr + 3] as u32)
     }
-
 
     /// Returns the current ProgramCounter value
     pub fn pc(&self) -> u32 {
