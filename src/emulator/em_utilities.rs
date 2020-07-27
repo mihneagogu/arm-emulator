@@ -61,9 +61,9 @@ pub enum BitPos32 {
 
 impl BitPos32 {
     /// Generates a Position from a u8
-    ///
-    /// # Panics
-    /// Panics if given a position greater than 31
+///
+/// # Panics
+/// Panics if given a position greater than 31
     pub fn from_u8(pos: u8) -> Self {
         if pos > MAX_BIT_INDEX {
             panic!(
@@ -92,6 +92,11 @@ pub fn process_mask(n: u32, start_pos: BitPos32, end_pos: BitPos32) -> u32 {
     (n >> start_pos) & mask
 }
 
+/// Checks if the given bit is set
+pub fn bit_mask(n: u32, pos: BitPos32) -> u32 {
+    (n >> pos.to_u8()) & 1
+}
+
 /// The pipeline struct
 #[derive(Debug)]
 pub struct Pipe {
@@ -102,7 +107,7 @@ pub struct Pipe {
 
 impl Pipe {
     /// The pipeline lag is 8 bytes (aka 2 instructions)
-    /// because of the pipeline execution cycle
+/// because of the pipeline execution cycle
     const PIPE_LAG: u8 = 8;
     pub fn init(cpu: &mut CpuState) -> Self {
         cpu.increment_pc();
@@ -125,6 +130,16 @@ impl Pipe {
     pub fn clear_fetching(&mut self) {
         self.fetching = 0;
     }
+
+    pub fn set_fetching(&mut self, code: u32) {
+        self.fetching = code;
+    }
+
+    pub fn clear(&mut self) {
+        self.executing = None;
+        self.decoding = None;
+        self.fetching = 0;
+    }
 }
 
 #[derive(Debug)]
@@ -135,13 +150,17 @@ pub struct CpuState {
 
 impl CpuState {
     /// Initializes an ARM Cpu
-    /// with 17 registers
-    /// and 65536 bytes of memory
+/// with 17 registers
+/// and 65536 bytes of memory
     pub fn init() -> Self {
         Self {
             registers: Box::new([0; REGISTERS_NO]),
             memory: Box::new([0; MEMORY_SIZE]),
         }
+    }
+
+    pub fn pc(&self) -> u32 {
+        self.registers[PC]
     }
 
     /// Gets the CPSR status for the given flag
@@ -176,14 +195,14 @@ impl CpuState {
     }
 
     /// Increments the ProgramCounter (registers[15])
-    /// by 4 bytes aka 32 bits, passing to the next instruction
+/// by 4 bytes aka 32 bits, passing to the next instruction
     pub fn increment_pc(&mut self) {
         self.registers[PC] += 4;
     }
 
     /// Offsets the ProgramCounter with 'offset' bytes
-    /// It is guaranteed not to overflow u32 type so casting to i32 then subtracting
-    /// and then casting back is fine
+/// It is guaranteed not to overflow u32 type so casting to i32 then subtracting
+/// and then casting back is fine
     pub fn offset_pc(&mut self, offset: i32) {
         self.registers[PC] += ((self.registers[PC] as i32) + offset) as u32;
     }
@@ -219,3 +238,4 @@ impl CpuState {
         }
     }
 }
+

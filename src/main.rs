@@ -1,8 +1,10 @@
 use std::process::exit;
 use std::{env, fs};
 
-#[path = "emulator/pipeline_executor.rs"]
-mod pipeline_executor;
+mod emulator;
+use emulator::pipeline_executor;
+
+
 
 /// Println!'s a statement
 /// with the given format if the program is run in debug mode
