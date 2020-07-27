@@ -19,41 +19,34 @@ enum DataProcOpcode {
     MOV = 13,
 }
 
-
 macro_rules! immediate_enabled {
     ($bits:expr) => {
         bit_mask($bits, bp32![25]) != 0
     };
 }
 
-
-
 macro_rules! cpsr_enabled {
     ($bits:expr) => {
         bit_mask($bits, bp32![20]) != 0
     };
-
 }
-
 
 macro_rules! dest_reg {
     ($bits:expr) => {
         mask![$bits, 12, 15]
     };
-
 }
 
 macro_rules! operand1_reg_bits {
     ($bits:expr) => {
         mask![$bits, 16, 19];
-    }
+    };
 }
-
 
 macro_rules! operand2_reg_bits {
     ($bits:expr) => {
         mask![$bits, 0, 11]
-    }
+    };
 }
 
 /// Gets the opcode bits
@@ -108,7 +101,11 @@ fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
             result = operand1 + operand2;
             // set c_bit if it overflows
             let overflow_check: u64 = (operand1 as u64) + (operand2 as u64);
-            c_bit = if overflow_check >= ((1 as u64) << 32) { 1 } else { 0 };
+            c_bit = if overflow_check >= ((1 as u64) << 32) {
+                1
+            } else {
+                0
+            };
         }
         DataProcOpcode::TST => {
             result = operand1 & operand2;
@@ -137,17 +134,16 @@ fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
     // CPSR flags
 
     if cpsr_enabled![bits] {
-        // TODO: C bit (bit 29 CPSR) - set to c_bit which is determined by the opcode:
-        //set_CPSR_flag(cpu_state, C, c_bit);
-//
-        ////Z bit (bit 30 of CPSR) - Z is 1 iff result == 0:
-        //if (result == 0) {
-            //set_CPSR_flag(cpu_state, Z, true);
-        //} else {
-            //set_CPSR_flag(cpu_state, Z, false);
-        //}
-//
-        ////N bit (bit 31 of CPSR) - set to bit 31 of result:
-        //set_CPSR_flag(cpu_state, N, process_mask(result, 31, 31));
+        // C bit (bit 29 CPSR) - set to c_bit which is determined by the opcode:
+        cpu.set_CPSR_flag(Flag::C, c_bit != 0);
+
+        //Z bit (bit 30 of CPSR) - Z is 1 iff result == 0:
+        if result == 0 {
+            cpu.set_CPSR_flag(Flag::Z, true);
+        } else {
+            cpu.set_CPSR_flag(Flag::Z, false);
+        }
+
+        cpu.set_CPSR_flag(Flag::N, mask![result, 31]);
     }
 }

@@ -1,14 +1,18 @@
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-/// Macro used for masking, just a shorthand
+#[doc = "Macro used for masking, just a shorthand"]
 macro_rules! mask {
+    ($bits:expr, $pos:expr) => {
+        bit_mask($bits, bp32![$pos]) != 0
+    };
+
     ($bits:expr, $start:expr, $end:expr) => {
         process_mask($bits, bp32![$start], bp32![$end])
     }
 }
 
-/// Macro that panics if the condition is true, with the given message
+#[doc = "Macro that panics if the condition is true, with the given message"]
 macro_rules! panic_on {
     ($cond:expr, $msg:tt) => {
         if $cond {
@@ -17,6 +21,7 @@ macro_rules! panic_on {
     };
 }
 
+#[doc = "Creates a BitPos32 wrapper from the given integer"]
 macro_rules! bp32 {
     ($pos:expr) => {{
         BitPos32::from_u8($pos)
@@ -208,8 +213,22 @@ impl CpuState {
         self.registers[PC]
     }
 
+    pub fn cpsr(&self) -> u32 {
+        self.registers[CPSR]
+    }
+
+    /// Sets the given CPSR flag
+    pub fn set_CPSR_flag(&mut self, flag: Flag, set: bool) {
+        let mask: u32 = 1 << (31 - (flag as u32));
+        self.registers[CPSR] = if set {
+            self.cpsr() | mask
+        } else {
+            self.cpsr() & !mask
+        };
+    }
+
     /// Gets the CPSR status for the given flag
-    fn get_flag(&self, flag: Flag) -> bool {
+    pub fn get_flag(&self, flag: Flag) -> bool {
         let mask: u32 = 1 << (MAX_BIT_INDEX - flag as u8);
         // Parantheses probably not needed, added for good measure
         (self.registers[CPSR] & mask) != 0
