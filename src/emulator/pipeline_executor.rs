@@ -23,32 +23,40 @@ fn execute_instr(instr: Instruction, cpu: &mut CpuState, pipe: &mut Pipe) {
                 return;
             }
         }
-        None => return, // Exit, must have gotten a wrong bit-mask, can be unreachable!()
+        // We are assuming the binary file has correct instructions, so an instruction with a wrong
+        // CPSR flag will panic
+        None => panic!("You gave me a wrong CPSR flag code, something is wrong with your binary file!")
     };
 
-    // Alternatively could have made a Hashmap containg the instruciton types and closures for
-    // execution
-    // Managed to store them using Rc<RefCell<Box<dyn FnOnce()>>> for the functions
-    // but getting the closures to execute was harder
-    // This solution works just fine albeit less advanced and more C-like
-    match instr.instruction_type {
-        InstructionType::BRANCH => {
-            // check whether branch succeeded
-        }
-        InstructionType::DATA_PROCESS => {
-            // execute data processing instruction
-            pipe.clear_executing();
-        },
-        InstructionType::MULTIPLTY => {
-            // execute multiply instruction 
-            pipe.clear_executing();
-        },
-        InstructionType::SINGLE_DATA_TRANSFER => {
-            // execute multiply instruction 
-            pipe.clear_executing();
-        },
 
-    }
+    // Map from the type and the closure to be executed
+    // A match statement would have been simpler, but did this because it's more advanced
+    // and uses Rust's abstractions pretty well
+    let mut executors: HashMap<InstructionType, Box<dyn Fn(&mut Pipe)>> = HashMap::new();
+
+    executors.insert(InstructionType::DATA_PROCESS, Box::new(|pipe: &mut Pipe| {
+       // execute data process instruction
+       pipe.clear_executing();
+    }));
+    
+
+    executors.insert(InstructionType::BRANCH, Box::new(|pipe: &mut Pipe| {
+        // Check whether branch instruction succeeded
+    }));
+
+
+    executors.insert(InstructionType::SINGLE_DATA_TRANSFER, Box::new(|pipe: &mut Pipe| {
+       // execute single data transfer instruction 
+       pipe.clear_executing();
+    }));
+
+    executors.insert(InstructionType::MULTIPLTY, Box::new(|pipe: &mut Pipe| {
+       // execute multiply instruction
+       pipe.clear_executing();
+    }));
+
+    executors.get(&instr.instruction_type).map(|fun| { fun(pipe) });
+
 }
 
 /// Helper function that helps with checking which instruction type
