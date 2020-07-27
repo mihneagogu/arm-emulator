@@ -13,23 +13,37 @@ pub enum ShiftOp {
 }
 
 
-fn shifted_reg_m_bits(bits: u32) -> u32 {
-    process_mask(bits, bp32![0], bp32![3])
+// Use macro expansion to get rid of the function overhead
+// Might not make a big difference but it's decent
+macro_rules! shifted_reg_m_bits {
+    ($bits:expr) => {
+        mask![$bits, 0, 3]
+    }
 }
 
-fn shift_mode_bit(bits: u32) -> bool {
-    bit_mask(bits, bp32![4]) != 0
+macro_rules! shift_mode_bit {
+    ($bits:expr) => {
+        mask![$bits, 4]
+    }
 }
 
-fn shift_type_bits(bits: u32) -> u32 {
-    mask![bits, 5, 6]
+macro_rules! shift_type_bits {
+    ($bits:expr) => {
+        mask![$bits, 5, 6];
+    }
 }
 
-fn shift_register_bits(bits: u32) -> u32 {
-    mask![bits, 8, 11]
+macro_rules! shift_register_bits {
+    ($bits:expr) => { 
+        mask![$bits, 8, 11]
+    }
 }
 
-fn shift_constant_bits(bits: u32) -> u32 { mask![bits, 7, 11] }
+macro_rules! shift_constant_bits {
+    ($bits:expr) => { 
+        mask![$bits, 7, 11]
+    }
+}
 
 
 fn execute_shift(operand: u32, shift_amount: u32, shift_opcode: ShiftOp,
@@ -62,17 +76,17 @@ fn execute_shift(operand: u32, shift_amount: u32, shift_opcode: ShiftOp,
 pub fn reg_offset_shift(cpu: &CpuState, instr: &Instruction, c_bit: &mut u8) -> u32 {
     let mut result: u32 = 0;
     let bits = instr.code;
-    let reg_contents: u32 = cpu.registers[shifted_reg_m_bits(bits) as usize];
+    let reg_contents: u32 = cpu.registers[shifted_reg_m_bits![bits] as usize];
 
-    if shift_mode_bit(bits) {
-        let lower_byte: u8 = cpu.registers[shift_register_bits(bits) as usize] as u8;
-        let shift_type = shift_type_bits(bits);
+    if shift_mode_bit![bits] {
+        let lower_byte: u8 = cpu.registers[shift_register_bits![bits] as usize] as u8;
+        let shift_type = shift_type_bits![bits];
         let shift_type = FromPrimitive::from_u32(shift_type).unwrap();
         result = execute_shift(reg_contents, lower_byte as u32, shift_type, c_bit);
     } else {
-        let shift_type = shift_type_bits(bits);
+        let shift_type = shift_type_bits![bits];
         let shift_type = FromPrimitive::from_u32(shift_type).unwrap();
-        result = execute_shift(reg_contents, shift_constant_bits(bits), shift_type, c_bit);
+        result = execute_shift(reg_contents, shift_constant_bits![bits], shift_type, c_bit);
     }
 
     result
