@@ -1,5 +1,6 @@
-use crate::emulator::em_utilities as util;
+use crate::emulator::{em_utilities as util, barrel_shifter};
 use util::*;
+
 
 /// Returns whether the immediate is enabled for the given instruction
 fn immediate_enabled(bits: u32) -> bool {
