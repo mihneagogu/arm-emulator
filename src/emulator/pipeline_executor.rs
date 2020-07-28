@@ -77,8 +77,7 @@ fn execute_instr(instr: &Instruction, cpu: &mut CpuState, pipe: &mut Pipe) -> bo
     );
 
     // Safe to unwrap since we know we have the required functions in the map
-    let executor = executors
-        .get(&instr.instruction_type).unwrap();
+    let executor = executors.get(&instr.instruction_type).unwrap();
     executor(instr, pipe, cpu)
     //executors.get(&instr.instruction_type).map(|fun| { fun(pipe) });
 }
@@ -136,11 +135,52 @@ fn start_pipeline_helper(cpu: &mut CpuState, pipe: &mut Pipe) {
         pipe.executing = new_exec;
         pipe.decoding = Some(decode_instruction(pipe.fetching));
         let mut branch_succeeded = false;
-        let mut succeeded = false;
         if let Some(instr) = &pipe.executing {
-            execute_instr(&Rc::clone(instr), cpu, pipe);
+            let instr_type = instr.instruction_type;
+            let succeeded = execute_instr(&Rc::clone(instr), cpu, pipe);
+            if succeeded && (instr_type == InstructionType::BRANCH) {
+                branch_succeeded = true;
+            }
         }
-
-
+        if !branch_succeeded {
+            pipe.fetching = cpu.fetch(cpu.pc() as usize);
+            cpu.increment_pc();
+        }
+        // recursive call, which switch it to iterative
+        start_pipeline_helper(cpu, pipe);
+    } else {
+        let ended = end_pipeline(cpu, pipe);
+        if !ended {
+            start_pipeline_helper(cpu, pipe);
+        }
     }
+}
+
+
+/// Function that tries to end the pipeline and returns whether it did actually
+/// succeed in ending it
+fn end_pipeline(cpu: &mut CpuState, pipe: &mut Pipe) -> bool {
+    if let Some(instr) = &pipe.executing {
+        let instr_type = instr.instruction_type;
+        let succeeded = execute_instr(&Rc::clone(instr), cpu, pipe);
+        if succeeded && (instr_type == InstructionType::BRANCH) {
+            // executed a branch instruction which succeeded, so no longer terminating
+            return false;
+        }
+        cpu.increment_pc();
+        pipe.clear_decoding();
+    } else {
+        if let Some(instr) = &pipe.decoding {
+            let instr_type = instr.instruction_type;
+            let succeeded = execute_instr(&Rc::clone(instr), cpu, pipe);
+            if succeeded && (instr_type == InstructionType::BRANCH) {
+                // executed a branch instruction which succeeded, so no longer terminating
+                return false;
+            }
+        }
+        pipe.clear_decoding();
+    }
+
+    cpu.increment_pc();
+    true
 }
