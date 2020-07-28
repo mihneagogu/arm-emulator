@@ -54,48 +54,7 @@ fn assemble(asm_path: &str, out_path: &str) -> Result<(), std::io::Error> {
 ///
 /// Propagates std::io::Error to `main` if the file path is invalid
 fn emulate(path: &str) -> Result<(), std::io::Error> {
-    let instructions = std::fs::read(path)?;
-
-    if instructions.len() % 4 != 0 {
-        panic!("Binary file has a number of bytes undivisible by 4");
-    }
-
-    let mut counter = 0u8;
-
-    // array of u32 for convenience, so we do not need to convert
-    // every time from u8 to u32 when shifting
-    let mut instr_bytes: [u32; 4] = [0; 4];
-    let mut u32_instructions: Vec<u32> = Vec::with_capacity(instructions.len() % 4);
-    let mut first = true;
-
-    // Parses the instruction from the binary file
-    for b in &instructions {
-        if counter % 4 == 0 && !first {
-            // Index it in little endian
-            let instr: u32 =
-                instr_bytes[0] | instr_bytes[1] << 8 | instr_bytes[2] << 16 | instr_bytes[3] << 24;
-            u32_instructions.push(instr);
-            counter = 0;
-        }
-        first = false;
-        instr_bytes[counter as usize] = *b as u32;
-        counter += 1;
-    }
-
-    // Just shadowing the `instruction` variable
-    let instructions = u32_instructions;
-
-    if cfg!(debug_assertions) {
-        print!("Binary instructions as little endian u32: ");
-        print!("[");
-        for inst in &instructions {
-            print!("{:x}, ", inst);
-        }
-        println!("]");
-    }
-
-    // Starts the emulation process
-    pipeline_executor::emulate(instructions);
+    pipeline_executor::emulate(path);
 
     Ok(())
 }

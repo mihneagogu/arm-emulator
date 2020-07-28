@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use std::fs;
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -177,10 +178,25 @@ impl CpuState {
     /// Initializes an ARM Cpu
     /// with 17 registers
     /// and 65536 bytes of memory
-    pub fn init() -> Self {
+    ///
+    /// # Panics
+    /// Panics if given an illicit file path
+    pub fn init(path: &str) -> Self {
+        // TODO: Instead of returning self should maybe return Result<Self, _>
+        // to propagate error upwards instead of crashing in the `constructor`
+        let instr = fs::read(path);
+        let mut memory: Box<[u8]>;
+        match instr {
+            Ok(mut instr_vec) => {
+                instr_vec.resize(MEMORY_SIZE, 0);
+                memory = instr_vec.into_boxed_slice();
+            },
+            Err(_) => panic!("You gave me an illicit file path. Aborting!")
+
+        }
         Self {
             registers: Box::new([0; REGISTERS_NO]),
-            memory: Box::new([0; MEMORY_SIZE]),
+            memory
         }
     }
 

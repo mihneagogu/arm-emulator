@@ -11,8 +11,9 @@ use branch::execute_branch_instr;
 use util::*;
 
 /// Executes the emulator given the instruction vector
-pub fn emulate(instructions: Vec<u32>) {
-    let cpu = util::CpuState::init();
+pub fn emulate(path: &str) {
+    let mut cpu = util::CpuState::init(path);
+    start_pipeline(&mut cpu);
 }
 
 /// Executes the given instruction
