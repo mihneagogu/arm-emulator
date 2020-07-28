@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
@@ -44,7 +46,7 @@ pub enum Flag {
 }
 
 #[warn(non_camel_case_types)]
-#[derive(Debug, Hash, PartialEq)]
+#[derive(Debug, Hash, PartialEq, Clone, Copy)]
 pub enum InstructionType {
     DATA_PROCESS,
     MULTIPLTY,
@@ -124,9 +126,9 @@ pub fn bit_mask(n: u32, pos: BitPos32) -> u32 {
 /// The pipeline struct
 #[derive(Debug)]
 pub struct Pipe {
-    executing: Option<Box<Instruction>>,
-    decoding: Option<Box<Instruction>>,
-    fetching: u32,
+    pub executing: Option<Rc<Instruction>>,
+    pub decoding: Option<Rc<Instruction>>,
+    pub fetching: u32,
 }
 
 impl Pipe {

@@ -5,11 +5,10 @@ use std::rc::Rc;
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use crate::emulator::em_utilities as util;
 use crate::emulator::branch_instr as branch;
-use util::*;
+use crate::emulator::em_utilities as util;
 use branch::execute_branch_instr;
-
+use util::*;
 
 /// Executes the emulator given the instruction vector
 pub fn emulate(instructions: Vec<u32>) {
@@ -17,14 +16,14 @@ pub fn emulate(instructions: Vec<u32>) {
 }
 
 /// Executes the given instruction
-fn execute_instr(instr: &mut Instruction, cpu: &mut CpuState, pipe: &mut Pipe) {
+fn execute_instr(instr: &Instruction, cpu: &mut CpuState, pipe: &mut Pipe) -> bool {
     let flag_code = process_mask(instr.code, BitPos32::from_u8(28), BitPos32::from_u8(31));
     let flag_code = FromPrimitive::from_u32(flag_code);
     match flag_code {
         Some(code) => {
             // Don't execute if the CPSR condition is failed
             if !cpu.check_CPSR_cond(code) {
-                return;
+                return false;
             }
         }
         // We are assuming the binary file has correct instructions, so an instruction with a wrong
@@ -37,42 +36,50 @@ fn execute_instr(instr: &mut Instruction, cpu: &mut CpuState, pipe: &mut Pipe) {
     // Map from the type and the closure to be executed
     // A match statement would have been simpler, but did this because it's more advanced
     // and uses Rust's abstractions pretty well
-    let mut executors: HashMap<InstructionType, fn(&mut Instruction, &mut Pipe, &mut CpuState) -> ()> = HashMap::new();
+    let mut executors: HashMap<
+        InstructionType,
+        fn(&Instruction, &mut Pipe, &mut CpuState) -> (bool),
+    > = HashMap::new();
 
     executors.insert(
         InstructionType::DATA_PROCESS,
-        |instr: &mut Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
+        |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // execute data process instruction
             pipe.clear_executing();
+            return true;
         },
     );
 
     executors.insert(
         InstructionType::BRANCH,
-        |instr: &mut Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
+        |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // Check whether branch instruction succeeded
+            return execute_branch_instr(instr, cpu, pipe);
         },
     );
 
     executors.insert(
         InstructionType::SINGLE_DATA_TRANSFER,
-        |instr: &mut Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
+        |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // execute single data transfer instruction
             pipe.clear_executing();
+            return true;
         },
     );
 
     executors.insert(
         InstructionType::MULTIPLTY,
-        |instr: &mut Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
+        |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // execute multiply instruction
             pipe.clear_executing();
+            return true;
         },
     );
 
-    executors
-        .get(&instr.instruction_type)
-        .map(|execute| execute(instr, pipe, cpu));
+    // Safe to unwrap since we know we have the required functions in the map
+    let executor = executors
+        .get(&instr.instruction_type).unwrap();
+    executor(instr, pipe, cpu)
     //executors.get(&instr.instruction_type).map(|fun| { fun(pipe) });
 }
 
@@ -100,7 +107,7 @@ fn is_single_data_transfer_instr(bits: u32) -> bool {
     instruction_condition(bits, 26, 27, 1)
 }
 
-pub fn decode_instruction(bits: u32) -> Instruction {
+pub fn decode_instruction(bits: u32) -> Rc<Instruction> {
     let mut instruction_type;
     if is_branch_instr(bits) {
         instruction_type = InstructionType::BRANCH;
@@ -111,12 +118,11 @@ pub fn decode_instruction(bits: u32) -> Instruction {
     } else {
         instruction_type = InstructionType::DATA_PROCESS;
     }
-    Instruction {
+    Rc::new(Instruction {
         code: bits,
         instruction_type,
-    }
+    })
 }
-
 
 pub fn start_pipeline(cpu: &mut CpuState) {
     let mut pipe = Pipe::init(cpu);
@@ -124,5 +130,17 @@ pub fn start_pipeline(cpu: &mut CpuState) {
 }
 
 fn start_pipeline_helper(cpu: &mut CpuState, pipe: &mut Pipe) {
+    if pipe.fetching != 0 {
+        // Set decoding to None and move the previous decoding value to executing
+        let new_exec = pipe.decoding.take();
+        pipe.executing = new_exec;
+        pipe.decoding = Some(decode_instruction(pipe.fetching));
+        let mut branch_succeeded = false;
+        let mut succeeded = false;
+        if let Some(instr) = &pipe.executing {
+            execute_instr(&Rc::clone(instr), cpu, pipe);
+        }
 
+
+    }
 }
