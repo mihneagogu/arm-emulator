@@ -17,7 +17,7 @@ pub fn emulate(instructions: Vec<u32>) {
 }
 
 /// Executes the given instruction
-fn execute_instr(instr: Instruction, cpu: &mut CpuState, pipe: &mut Pipe) {
+fn execute_instr(instr: &mut Instruction, cpu: &mut CpuState, pipe: &mut Pipe) {
     let flag_code = process_mask(instr.code, BitPos32::from_u8(28), BitPos32::from_u8(31));
     let flag_code = FromPrimitive::from_u32(flag_code);
     match flag_code {
@@ -37,43 +37,42 @@ fn execute_instr(instr: Instruction, cpu: &mut CpuState, pipe: &mut Pipe) {
     // Map from the type and the closure to be executed
     // A match statement would have been simpler, but did this because it's more advanced
     // and uses Rust's abstractions pretty well
-    let mut executors: HashMap<InstructionType, Box<dyn Fn(&mut Pipe, &mut CpuState)>> = HashMap::new();
+    let mut executors: HashMap<InstructionType, fn(&mut Instruction, &mut Pipe, &mut CpuState) -> ()> = HashMap::new();
 
     executors.insert(
         InstructionType::DATA_PROCESS,
-        Box::new(|pipe: &mut Pipe, cpu: &mut CpuState| {
+        |instr: &mut Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // execute data process instruction
             pipe.clear_executing();
-        }),
+        },
     );
 
     executors.insert(
         InstructionType::BRANCH,
-        Box::new(|pipe: &mut Pipe, cpu: &mut CpuState| {
-            execute_branch_instr(&instr, cpu, pipe);
+        |instr: &mut Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // Check whether branch instruction succeeded
-        }),
+        },
     );
 
     executors.insert(
         InstructionType::SINGLE_DATA_TRANSFER,
-        Box::new(|pipe: &mut Pipe, cpu: &mut CpuState| {
+        |instr: &mut Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // execute single data transfer instruction
             pipe.clear_executing();
-        }),
+        },
     );
 
     executors.insert(
         InstructionType::MULTIPLTY,
-        Box::new(|pipe: &mut Pipe, cpu: &mut CpuState| {
+        |instr: &mut Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // execute multiply instruction
             pipe.clear_executing();
-        }),
+        },
     );
 
     executors
         .get(&instr.instruction_type)
-        .map(|execute| execute(pipe, cpu));
+        .map(|execute| execute(instr, pipe, cpu));
     //executors.get(&instr.instruction_type).map(|fun| { fun(pipe) });
 }
 
@@ -118,3 +117,12 @@ pub fn decode_instruction(bits: u32) -> Instruction {
     }
 }
 
+
+pub fn start_pipeline(cpu: &mut CpuState) {
+    let mut pipe = Pipe::init(cpu);
+    start_pipeline_helper(cpu, &mut pipe);
+}
+
+fn start_pipeline_helper(cpu: &mut CpuState, pipe: &mut Pipe) {
+
+}
