@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::io;
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -11,9 +12,11 @@ use branch::execute_branch_instr;
 use util::*;
 
 /// Executes the emulator given the instruction vector
-pub fn emulate(path: &str) {
-    let mut cpu = util::CpuState::init(path);
-    start_pipeline(&mut cpu);
+pub fn emulate(path: &str) -> Result<(), std::io::Error> {
+    let mut cpu = util::CpuState::init(path)?;
+    
+    //start_pipeline(&mut cpu);
+    Ok(())
 }
 
 /// Executes the given instruction

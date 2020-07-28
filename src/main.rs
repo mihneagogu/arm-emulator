@@ -54,7 +54,7 @@ fn assemble(asm_path: &str, out_path: &str) -> Result<(), std::io::Error> {
 ///
 /// Propagates std::io::Error to `main` if the file path is invalid
 fn emulate(path: &str) -> Result<(), std::io::Error> {
-    pipeline_executor::emulate(path);
+    pipeline_executor::emulate(path)?;
 
     Ok(())
 }

@@ -1,5 +1,5 @@
-use std::rc::Rc;
 use std::fs;
+use std::rc::Rc;
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -12,7 +12,7 @@ macro_rules! mask {
 
     ($bits:expr, $start:expr, $end:expr) => {
         process_mask($bits, bp32![$start], bp32![$end])
-    }
+    };
 }
 
 #[doc = "Macro that panics if the condition is true, with the given message"]
@@ -180,24 +180,20 @@ impl CpuState {
     /// and 65536 bytes of memory
     ///
     /// # Panics
-    /// Panics if given an illicit file path
-    pub fn init(path: &str) -> Self {
-        // TODO: Instead of returning self should maybe return Result<Self, _>
-        // to propagate error upwards instead of crashing in the `constructor`
-        let instr = fs::read(path);
-        let mut memory: Box<[u8]>;
-        match instr {
-            Ok(mut instr_vec) => {
-                instr_vec.resize(MEMORY_SIZE, 0);
-                memory = instr_vec.into_boxed_slice();
-            },
-            Err(_) => panic!("You gave me an illicit file path. Aborting!")
-
-        }
-        Self {
+    /// Panics if the number of bytes from the binary file isn't divisible by 4
+    /// (Must mean the file is corrupted)
+    pub fn init(path: &str) -> Result<Self, std::io::Error> {
+        let mut instruction_vec = fs::read(path)?;
+        panic_on!(
+            instruction_vec.len() % 4 != 0,
+            "Can only have a number of bytes in the file which is divisible by 4"
+        );
+        instruction_vec.resize(MEMORY_SIZE, 0);
+        let mut memory: Box<[u8]> = instruction_vec.into_boxed_slice();
+        Ok(Self {
             registers: Box::new([0; REGISTERS_NO]),
-            memory
-        }
+            memory,
+        })
     }
 
     /// Fetches a big endian u32 at location ptr from the memory
