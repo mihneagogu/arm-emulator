@@ -57,7 +57,7 @@ macro_rules! opcode_bits {
 }
 
 /// Executes a data processing instruction
-fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
+pub fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
     let bits = instr.code;
     let mut operand1: u32 = cpu.registers[operand1_reg_bits![bits] as usize];
     let mut operand2: u32 = operand2_reg_bits![bits];
@@ -65,7 +65,7 @@ fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
     // will be the computed result that is written into the dest_register
     let mut result: u32 = 0;
     // if write result is 0 then the result is NOT written to the dest_register
-    let mut write_result: u8 = 0;
+    let mut write_result: u8 = 1;
     // c_bit is 1 if 1 is to be written to the C bit fo CPSR
     let mut c_bit: u8 = 0;
 

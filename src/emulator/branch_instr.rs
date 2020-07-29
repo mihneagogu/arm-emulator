@@ -29,8 +29,8 @@ pub fn execute_branch_instr(instr: &Instruction, cpu: &mut CpuState, pipe: &mut 
 
     cpu.offset_pc(offset);
     pipe.clear();
-    cpu.increment_pc();
     pipe.set_fetching(cpu.fetch(cpu.pc() as usize));
+    cpu.increment_pc();
 
     true
 }

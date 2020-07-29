@@ -94,6 +94,10 @@ pub fn reg_offset_shift(cpu: &CpuState, instr: &Instruction, c_bit: &mut u8) -> 
 
 pub fn rotate_right(operand: u32, rotate_amount: u32) -> u32 {
     let mut result: u32 = operand >> rotate_amount;
+    if (rotate_amount == 0){
+        // edge case when the result should be 1
+        return operand;
+    }
     result |= operand << (32 - rotate_amount);
 
     result

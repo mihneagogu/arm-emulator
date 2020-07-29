@@ -7,15 +7,18 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::emulator::branch_instr as branch;
+use crate::emulator::data_proc_instr as data_proc;
 use crate::emulator::em_utilities as util;
 use branch::execute_branch_instr;
+use data_proc::execute_data_processing_instr;
 use util::*;
 
 /// Executes the emulator given the instruction vector
 pub fn emulate(path: &str) -> Result<(), std::io::Error> {
     let mut cpu = util::CpuState::init(path)?;
     
-    //start_pipeline(&mut cpu);
+    start_pipeline(&mut cpu);
+    cpu.print_registers();
     Ok(())
 }
 
@@ -49,6 +52,7 @@ fn execute_instr(instr: &Instruction, cpu: &mut CpuState, pipe: &mut Pipe) -> bo
         InstructionType::DATA_PROCESS,
         |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // execute data process instruction
+            execute_data_processing_instr(instr, cpu);
             pipe.clear_executing();
             true
         },
@@ -133,6 +137,7 @@ pub fn start_pipeline(cpu: &mut CpuState) {
 }
 
 fn start_pipeline_helper(cpu: &mut CpuState, pipe: &mut Pipe) {
+    // TODO: Switch recursive call to loop
     if pipe.fetching != 0 {
         // Set decoding to None and move the previous decoding value to executing
         let new_exec = pipe.decoding.take();
@@ -150,7 +155,6 @@ fn start_pipeline_helper(cpu: &mut CpuState, pipe: &mut Pipe) {
             pipe.fetching = cpu.fetch(cpu.pc() as usize);
             cpu.increment_pc();
         }
-        // recursive call, which switch it to iterative
         start_pipeline_helper(cpu, pipe);
     } else {
         let ended = end_pipeline(cpu, pipe);

@@ -115,7 +115,7 @@ impl BitPos32 {
 pub fn process_mask(n: u32, start_pos: BitPos32, end_pos: BitPos32) -> u32 {
     let end_pos = end_pos.to_u8();
     let start_pos = start_pos.to_u8();
-    let mask: u32 = 1 << (end_pos + 1 - start_pos) - 1;
+    let mask: u32 = ( 1 << (end_pos + 1 - start_pos) ) - 1;
     (n >> start_pos) & mask
 }
 
@@ -141,7 +141,7 @@ impl Pipe {
         Self {
             executing: None,
             decoding: None,
-            fetching: 0,
+            fetching: cpu.fetch(0),
         }
     }
 
@@ -282,7 +282,7 @@ impl CpuState {
     /// It is guaranteed not to overflow u32 type so casting to i32 then subtracting
     /// and then casting back is fine
     pub fn offset_pc(&mut self, offset: i32) {
-        self.registers[PC] += ((self.registers[PC] as i32) + offset) as u32;
+        self.registers[PC] = ((self.registers[PC] as i32) + offset) as u32;
     }
 
     /// Pretty prints the registers
