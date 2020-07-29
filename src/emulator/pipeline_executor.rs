@@ -40,54 +40,27 @@ fn execute_instr(instr: &Instruction, cpu: &mut CpuState, pipe: &mut Pipe) -> bo
         }
     };
 
-    // Map from the type and the closure to be executed
-    // A match statement would have been simpler, but did this because it's more advanced
-    // and uses Rust's abstractions pretty well
-    let mut executors: HashMap<
-        InstructionType,
-        fn(&Instruction, &mut Pipe, &mut CpuState) -> bool,
-    > = HashMap::new();
-
-    executors.insert(
-        InstructionType::DATA_PROCESS,
-        |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
-            // execute data process instruction
+    // A HashMap with functions as values would look more fancy
+    // but in case of testing loop01 the additional overhead cost was immense
+    // If run like this, the loop01 test case is finished faster than the C version
+    // which is quite impressive
+    match instr.instruction_type {
+        InstructionType::BRANCH => return execute_branch_instr(instr, cpu, pipe),
+        InstructionType::DATA_PROCESS => {
             execute_data_processing_instr(instr, cpu);
             pipe.clear_executing();
             true
-        },
-    );
-
-    executors.insert(
-        InstructionType::BRANCH,
-        |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
-            // Check whether branch instruction succeeded
-            execute_branch_instr(instr, cpu, pipe)
-        },
-    );
-
-    executors.insert(
-        InstructionType::SINGLE_DATA_TRANSFER,
-        |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
-            // execute single data transfer instruction
+        }
+        InstructionType::MULTIPLTY =>  {
             pipe.clear_executing();
             true
         },
-    );
-
-    executors.insert(
-        InstructionType::MULTIPLTY,
-        |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
-            // execute multiply instruction
+        InstructionType::SINGLE_DATA_TRANSFER =>  {
             pipe.clear_executing();
             true
         },
-    );
+    }
 
-    // Safe to unwrap since we know we have the required functions in the map
-    let executor = executors.get(&instr.instruction_type).unwrap();
-
-    executor(instr, pipe, cpu)
 }
 
 /// Helper function that helps with checking which instruction type
