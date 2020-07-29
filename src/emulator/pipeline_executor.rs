@@ -42,7 +42,7 @@ fn execute_instr(instr: &Instruction, cpu: &mut CpuState, pipe: &mut Pipe) -> bo
     // and uses Rust's abstractions pretty well
     let mut executors: HashMap<
         InstructionType,
-        fn(&Instruction, &mut Pipe, &mut CpuState) -> (bool),
+        fn(&Instruction, &mut Pipe, &mut CpuState) -> bool,
     > = HashMap::new();
 
     executors.insert(
@@ -50,7 +50,7 @@ fn execute_instr(instr: &Instruction, cpu: &mut CpuState, pipe: &mut Pipe) -> bo
         |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // execute data process instruction
             pipe.clear_executing();
-            return true;
+            true
         },
     );
 
@@ -58,7 +58,7 @@ fn execute_instr(instr: &Instruction, cpu: &mut CpuState, pipe: &mut Pipe) -> bo
         InstructionType::BRANCH,
         |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // Check whether branch instruction succeeded
-            return execute_branch_instr(instr, cpu, pipe);
+            execute_branch_instr(instr, cpu, pipe)
         },
     );
 
@@ -67,7 +67,7 @@ fn execute_instr(instr: &Instruction, cpu: &mut CpuState, pipe: &mut Pipe) -> bo
         |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // execute single data transfer instruction
             pipe.clear_executing();
-            return true;
+            true
         },
     );
 
@@ -76,14 +76,14 @@ fn execute_instr(instr: &Instruction, cpu: &mut CpuState, pipe: &mut Pipe) -> bo
         |instr: &Instruction, pipe: &mut Pipe, cpu: &mut CpuState| {
             // execute multiply instruction
             pipe.clear_executing();
-            return true;
+            true
         },
     );
 
     // Safe to unwrap since we know we have the required functions in the map
     let executor = executors.get(&instr.instruction_type).unwrap();
+
     executor(instr, pipe, cpu)
-    //executors.get(&instr.instruction_type).map(|fun| { fun(pipe) });
 }
 
 /// Helper function that helps with checking which instruction type
