@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::rc::Rc;
 use std::io;
+use std::rc::Rc;
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -16,7 +16,7 @@ use util::*;
 /// Executes the emulator given the instruction vector
 pub fn emulate(path: &str) -> Result<(), std::io::Error> {
     let mut cpu = util::CpuState::init(path)?;
-    
+
     start_pipeline(&mut cpu);
     cpu.print_registers();
     Ok(())
@@ -137,33 +137,33 @@ pub fn start_pipeline(cpu: &mut CpuState) {
 }
 
 fn start_pipeline_helper(cpu: &mut CpuState, pipe: &mut Pipe) {
-    // TODO: Switch recursive call to loop
-    if pipe.fetching != 0 {
-        // Set decoding to None and move the previous decoding value to executing
-        let new_exec = pipe.decoding.take();
-        pipe.executing = new_exec;
-        pipe.decoding = Some(decode_instruction(pipe.fetching));
-        let mut branch_succeeded = false;
-        if let Some(instr) = &pipe.executing {
-            let instr_type = instr.instruction_type;
-            let succeeded = execute_instr(&Rc::clone(instr), cpu, pipe);
-            if succeeded && (instr_type == InstructionType::BRANCH) {
-                branch_succeeded = true;
+    loop {
+        if pipe.fetching != 0 {
+            // Set decoding to None and move the previous decoding value to executing
+            let new_exec = pipe.decoding.take();
+            pipe.executing = new_exec;
+            pipe.decoding = Some(decode_instruction(pipe.fetching));
+            let mut branch_succeeded = false;
+            if let Some(instr) = &pipe.executing {
+                let instr_type = instr.instruction_type;
+                let succeeded = execute_instr(&Rc::clone(instr), cpu, pipe);
+                if succeeded && (instr_type == InstructionType::BRANCH) {
+                    branch_succeeded = true;
+                }
             }
-        }
-        if !branch_succeeded {
-            pipe.fetching = cpu.fetch(cpu.pc() as usize);
-            cpu.increment_pc();
-        }
-        start_pipeline_helper(cpu, pipe);
-    } else {
-        let ended = end_pipeline(cpu, pipe);
-        if !ended {
-            start_pipeline_helper(cpu, pipe);
+            if !branch_succeeded {
+                pipe.fetching = cpu.fetch(cpu.pc() as usize);
+                cpu.increment_pc();
+            }
+            //start_pipeline_helper(cpu, pipe);
+        } else {
+            let ended = end_pipeline(cpu, pipe);
+            if ended {
+                break;
+            }
         }
     }
 }
-
 
 /// Function that tries to end the pipeline and returns whether it did actually
 /// succeed in ending it

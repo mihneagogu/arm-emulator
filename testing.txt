@@ -27,7 +27,7 @@ Not tested: ldr14.s
 Not tested: ldr15.s
 Not tested: ldr16.s
 Tested: loop01.s
-    - Stack overflow
+    - Good
 Tested: loop02.s
     - Good
 Tested: loop03.s
