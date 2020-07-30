@@ -31,6 +31,15 @@ mod tests {
         }
     }
 
+    /// Checks whether the memory is well laid-out
+    fn memory_eq(cpu: &mut CpuState, expected: Vec<(usize, u32)>) {
+        for (ptr, expected) in &expected {
+            assert!(cpu.fetch(*ptr) == *expected, "Mismatch on memory at 0x{:x}, expected: 0x{:x}, found: 0x{:x}", ptr, expected, cpu.fetch(*ptr));
+        }
+
+    }
+
+
 
     #[test]
     fn add01() {
@@ -50,6 +59,7 @@ mod tests {
             memory : expected_mem.into_boxed_slice()
         };
         registers_eq(&mut cpu, &mut expected);
+        memory_eq(&mut cpu, vec![(0, 0xe3a01001), (4, 0xe2812002)]);
     }
 
     #[test]
