@@ -1,9 +1,5 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::io;
 use std::rc::Rc;
 
-use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::emulator::branch_instr as branch;
@@ -88,7 +84,7 @@ fn is_single_data_transfer_instr(bits: u32) -> bool {
 }
 
 pub fn decode_instruction(bits: u32) -> Rc<Instruction> {
-    let mut instruction_type;
+    let instruction_type;
     if is_branch_instr(bits) {
         instruction_type = InstructionType::BRANCH;
     } else if is_multiply_instr(bits) {

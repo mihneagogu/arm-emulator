@@ -2,7 +2,16 @@ use std::fs;
 use std::rc::Rc;
 
 use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
+
+/// Println!'s a statement
+/// with the given format if the program is run in debug mode
+macro_rules! debug_println {
+    ($($args:tt)*) => {
+        if cfg!(debug_assertions) {
+            println!($($args)*);
+        }
+    };
+}
 
 #[doc = "Macro used for masking, just a shorthand"]
 macro_rules! mask {
@@ -30,12 +39,6 @@ macro_rules! bp32 {
         BitPos32::from_u8($pos)
     }};
 }
-/// Uses the bp32![] macro to make a BitPos32
-/// (I'm not exporting the macro properly so it will stay
-/// as a function for now)
-pub fn bp32(pos: u8) -> BitPos32 {
-    BitPos32::from_u8(pos)
-}
 
 /// The state flags of the ARM processor
 #[derive(Debug, FromPrimitive)]
@@ -46,7 +49,7 @@ pub enum Flag {
     V = 3,
 }
 
-#[warn(non_camel_case_types)]
+#[allow(non_camel_case_types)]
 #[derive(Debug, Hash, PartialEq, Clone, Copy)]
 pub enum InstructionType {
     DATA_PROCESS,
@@ -189,7 +192,7 @@ impl CpuState {
             "Can only have a number of bytes in the file which is divisible by 4"
         );
         instruction_vec.resize(MEMORY_SIZE, 0);
-        let mut memory: Box<[u8]> = instruction_vec.into_boxed_slice();
+        let memory: Box<[u8]> = instruction_vec.into_boxed_slice();
         Ok(Self {
             registers: Box::new([0; REGISTERS_NO]),
             memory,
@@ -232,6 +235,7 @@ impl CpuState {
     }
 
     /// Sets the given CPSR flag
+    #[allow(non_snake_case)]
     pub fn set_CPSR_flag(&mut self, flag: Flag, set: bool) {
         let mask: u32 = 1 << (31 - (flag as u32));
         self.registers[CPSR] = if set {
@@ -249,6 +253,7 @@ impl CpuState {
     }
 
     /// Checks if the CPSR condition meets the flag requirements
+    #[allow(non_snake_case)]
     pub fn check_CPSR_cond(&self, flag_code: FlagCode) -> bool {
         match flag_code {
             // Equal

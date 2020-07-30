@@ -1,20 +1,10 @@
-use std::process::exit;
-use std::{env, fs};
+use std::env;
 
 mod emulator;
 use emulator::pipeline_executor;
 
 
 
-/// Println!'s a statement
-/// with the given format if the program is run in debug mode
-macro_rules! debug_println {
-    ($($args:tt)*) => {
-        if cfg!(debug_assertions) {
-            println!($($args)*);
-        }
-    };
-}
 #[derive(Debug)]
 enum Task<'a> {
     Emulate(&'a str),
@@ -59,6 +49,7 @@ fn emulate(path: &str) -> Result<(), std::io::Error> {
     Ok(())
 }
 
+#[allow(non_snake_case)]
 fn assert_cmd_line_params(args: &[String]) -> Task {
     let good_len = args.len() == 3 || args.len() == 4;
     if !good_len {

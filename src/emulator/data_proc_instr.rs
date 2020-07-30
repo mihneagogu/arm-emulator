@@ -59,7 +59,7 @@ macro_rules! opcode_bits {
 /// Executes a data processing instruction
 pub fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
     let bits = instr.code;
-    let mut operand1: u32 = cpu.registers[operand1_reg_bits![bits] as usize];
+    let operand1: u32 = cpu.registers[operand1_reg_bits![bits] as usize];
     let mut operand2: u32 = operand2_reg_bits![bits];
 
     // will be the computed result that is written into the dest_register

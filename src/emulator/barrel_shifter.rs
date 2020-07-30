@@ -48,8 +48,8 @@ macro_rules! shift_constant_bits {
 
 fn execute_shift(operand: u32, shift_amount: u32, shift_opcode: ShiftOp,
                  c_bit: &mut u8) -> u32 {
-    let mut result: u32;
-    let mut cbit: u64;
+    let result: u32;
+    let cbit: u64;
     match shift_opcode {
         ShiftOp::LSL => {
             result = operand << shift_amount;
@@ -94,7 +94,7 @@ pub fn reg_offset_shift(cpu: &CpuState, instr: &Instruction, c_bit: &mut u8) -> 
 
 pub fn rotate_right(operand: u32, rotate_amount: u32) -> u32 {
     let mut result: u32 = operand >> rotate_amount;
-    if (rotate_amount == 0){
+    if rotate_amount == 0 {
         // edge case when the result should be 1
         return operand;
     }
@@ -108,7 +108,7 @@ pub fn arithmetic_shift_right(operand: u32, shift_amount: u32) -> u32 {
     if ((1 << 31) & operand) != 0 {
         // MSB is 1
         result = operand >> shift_amount;
-        for i in 0..shift_amount {
+        for _ in 0..shift_amount {
             result |= 1 << (31 - 1);
         }
     } else {

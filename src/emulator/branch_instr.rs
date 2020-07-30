@@ -1,5 +1,4 @@
 
-use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use crate::emulator::em_utilities as util;
