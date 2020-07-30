@@ -14,12 +14,12 @@ use mul::execute_multiply_instruction;
 use util::*;
 
 /// Executes the emulator given the instruction vector
-pub fn emulate(path: &str) -> Result<(), std::io::Error> {
+pub fn emulate(path: &str) -> Result<CpuState, std::io::Error> {
     let mut cpu = util::CpuState::init(path)?;
 
     start_pipeline(&mut cpu);
     cpu.print_registers();
-    Ok(())
+    Ok(cpu)
 }
 
 /// Executes the given instruction

@@ -171,11 +171,13 @@ impl Pipe {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct CpuState {
     pub registers: Box<[u32]>,
     pub memory: Box<[u8]>,
 }
+
+impl Eq for CpuState {}
 
 impl CpuState {
     /// Initializes an ARM Cpu

@@ -2,6 +2,7 @@ use std::env;
 
 mod emulator;
 use emulator::pipeline_executor;
+mod tests;
 
 
 
