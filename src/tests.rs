@@ -1,8 +1,7 @@
-/// It is expected that the loading of the binary file is done properly in memory
 #[cfg(test)]
 mod tests {
     use super::*;
-    // TODO: Check memory as well
+    // TODO: Add all tests!
 
     const PC: usize = 15;
     const CPSR: usize = 16;
@@ -10,6 +9,16 @@ mod tests {
     use crate::emulator::em_utilities as util;
     use crate::emulator::pipeline_executor::emulate;
     use util::*;
+
+    /// Returns a heap-allocated [u32; 17] with all values equal to 0,
+    /// except the special ones at `usize` index with `u32` value
+    fn reg_from(specials: Vec<(usize, u32)>) -> Box<[u32]> {
+        let mut registers: Vec<u32> = vec![0; 17];
+        for (ind, val) in &specials {
+            registers[*ind] = *val;
+        }
+        registers.into_boxed_slice()
+    }
 
     /// Asserts whether the two cpus' registers are equal
     fn registers_eq(cpu: &mut CpuState, expected: &mut CpuState) {
@@ -32,6 +41,7 @@ mod tests {
     }
 
     /// Checks whether the memory is well laid-out
+    /// Besides the given tuples of memory, everything else should be just 0s
     fn memory_eq(cpu: &mut CpuState, expected: Vec<(usize, u32)>) {
         for (ptr, expected) in &expected {
             assert!(cpu.fetch(*ptr) == *expected, "Mismatch on memory at 0x{:x}, expected: 0x{:x}, found: 0x{:x}", ptr, expected, cpu.fetch(*ptr));
@@ -46,16 +56,11 @@ mod tests {
         let cpu = emulate("tests/add01");
         assert!(cpu.is_ok());
         let mut cpu = cpu.unwrap();
-        let mut expected_reg: Vec<u32> = vec![0; 17];
         let expected_mem: Vec<u8> = vec![0; 65536];
-
-        expected_reg[1] = 1;
-        expected_reg[2] = 3;
-        expected_reg[PC] = 16;
-        expected_reg[CPSR] = 0;
+        let registers_special = vec![(1, 1), (2, 3), (PC, 16), (CPSR, 0)];
 
         let mut expected = CpuState {
-            registers: expected_reg.into_boxed_slice(),
+            registers: reg_from(registers_special),
             memory : expected_mem.into_boxed_slice()
         };
         registers_eq(&mut cpu, &mut expected);
@@ -67,17 +72,11 @@ mod tests {
         let cpu = emulate("tests/add02");
         assert!(cpu.is_ok());
         let mut cpu = cpu.unwrap();
-        let mut expected_reg: Vec<u32> = vec![0; 17];
         let expected_mem: Vec<u8> = vec![0; 65536];
-
-        expected_reg[1] = 1;
-        expected_reg[2] = 2;
-        expected_reg[3] = 3;
-        expected_reg[PC] = 20;
-        expected_reg[CPSR] = 0;
+        let registers_special = vec![(1, 1), (2, 2), (3, 3), (PC, 20), (CPSR, 0)]; 
 
         let mut expected = CpuState {
-            registers: expected_reg.into_boxed_slice(),
+            registers: reg_from(registers_special),
             memory : expected_mem.into_boxed_slice()
         };
         registers_eq(&mut cpu, &mut expected);
@@ -89,15 +88,11 @@ mod tests {
         let cpu = emulate("tests/add03");
         assert!(cpu.is_ok());
         let mut cpu = cpu.unwrap();
-        let mut expected_reg: Vec<u32> = vec![0; 17];
         let expected_mem: Vec<u8> = vec![0; 65536];
-
-        expected_reg[1] = 2;
-        expected_reg[PC] = 16;
-        expected_reg[CPSR] = 0;
+        let special_registers = vec![(1, 2), (PC, 16), (CPSR, 0)];
 
         let mut expected = CpuState {
-            registers: expected_reg.into_boxed_slice(),
+            registers: reg_from(special_registers),
             memory : expected_mem.into_boxed_slice()
         };
         registers_eq(&mut cpu, &mut expected);
@@ -108,19 +103,11 @@ mod tests {
         let cpu = emulate("tests/add04");
         assert!(cpu.is_ok());
         let mut cpu = cpu.unwrap();
-        let mut expected_reg: Vec<u32> = vec![0; 17];
         let expected_mem: Vec<u8> = vec![0; 65536];
+        let special_registers = vec![(1, 1), (2, 2), (3, 3), (4, 7), (PC, 24), (CPSR, 0)];
         
-        expected_reg[1] = 1;
-        expected_reg[2] = 2;
-        expected_reg[3] = 3;
-        expected_reg[4] = 7;
-        expected_reg[PC] = 24;
-        expected_reg[CPSR] = 0;
-
-
         let mut expected = CpuState {
-            registers: expected_reg.into_boxed_slice(),
+            registers: reg_from(special_registers),
             memory : expected_mem.into_boxed_slice()
         };
         registers_eq(&mut cpu, &mut expected);
@@ -131,39 +118,26 @@ mod tests {
         let cpu = emulate("tests/and01");
         assert!(cpu.is_ok());
         let mut cpu = cpu.unwrap();
-        let mut expected_reg: Vec<u32> = vec![0; 17];
         let expected_mem: Vec<u8> = vec![0; 65536];
+        let special_registers = vec![(1, 255), (2, 171), (PC, 16), (CPSR, 0)];
         
-        expected_reg[1] = 255;
-        expected_reg[2] = 171;
-        expected_reg[PC] = 16;
-        expected_reg[CPSR] = 0;
-
-
         let mut expected = CpuState {
-            registers: expected_reg.into_boxed_slice(),
+            registers: reg_from(special_registers),
             memory : expected_mem.into_boxed_slice()
         };
         registers_eq(&mut cpu, &mut expected);
     }
 
     #[test]
-    fn and03() {
+    fn and02() {
         let cpu = emulate("tests/and02");
         assert!(cpu.is_ok());
         let mut cpu = cpu.unwrap();
-        let mut expected_reg: Vec<u32> = vec![0; 17];
         let expected_mem: Vec<u8> = vec![0; 65536];
-        
-        expected_reg[1] = 15;
-        expected_reg[2] = 171;
-        expected_reg[3] = 11;
-        expected_reg[PC] = 20;
-        expected_reg[CPSR] = 0;
-
+        let special_registers = vec![(1, 15), (2, 171), (3, 11), (PC, 20), (CPSR, 0)]; 
 
         let mut expected = CpuState {
-            registers: expected_reg.into_boxed_slice(),
+            registers: reg_from(special_registers),
             memory : expected_mem.into_boxed_slice()
         };
         registers_eq(&mut cpu, &mut expected);

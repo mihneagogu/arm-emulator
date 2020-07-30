@@ -89,15 +89,18 @@ pub fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
             result = operand1 ^ operand2;
         }
         DataProcOpcode::SUB => {
+            // TODO: fix overflow
             result = operand1 - operand2;
             // set c_bit if op2 > op1 (overflow)
             c_bit = if operand2 > operand1 { 0 } else { 1 };
         }
         DataProcOpcode::RSB => {
+            // TODO: fix overflow
             result = operand2 - operand1;
             c_bit = if operand1 > operand2 { 0 } else { 1 };
         }
         DataProcOpcode::ADD => {
+            // TODO: fix overflow
             result = operand1 + operand2;
             // set c_bit if it overflows
             let overflow_check: u64 = (operand1 as u64) + (operand2 as u64);
@@ -126,7 +129,7 @@ pub fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
                 c_bit = 1;
                 result = operand1 - operand2;
                 write_result = 0;
-                c_bit = if operand2 > operand1 { 0 } else { 1 };
+                //c_bit = if operand2 > operand1 { 0 } else { 1 };
             }
         }
         DataProcOpcode::ORR => {

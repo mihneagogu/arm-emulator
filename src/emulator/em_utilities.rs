@@ -212,7 +212,7 @@ impl CpuState {
     }
 
     /// Indexes in little endian an instruction from memory
-    fn index_little_endian(&self, ptr: usize) -> u32 {
+    pub fn index_little_endian(&self, ptr: usize) -> u32 {
         self.memory[ptr] as u32
             | (self.memory[ptr + 1] as u32) << 8
             | (self.memory[ptr + 2] as u32) << 16
