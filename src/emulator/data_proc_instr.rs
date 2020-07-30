@@ -116,8 +116,18 @@ pub fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
             write_result = 0;
         }
         DataProcOpcode::CMP => {
-            result = operand1 - operand2;
-            c_bit = if operand2 > operand1 { 0 } else { 1 };
+            write_result = 0;
+            if operand2 > operand1 {
+                // overflows so it wraps
+                result = operand2 - operand1;
+                c_bit = 0;
+            }
+            else {
+                c_bit = 1;
+                result = operand1 - operand2;
+                write_result = 0;
+                c_bit = if operand2 > operand1 { 0 } else { 1 };
+            }
         }
         DataProcOpcode::ORR => {
             result = operand1 | operand2;

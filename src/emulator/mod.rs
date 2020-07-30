@@ -6,6 +6,7 @@ pub mod pipeline_executor;
 pub mod branch_instr;
 pub mod data_proc_instr;
 pub mod barrel_shifter;
+pub mod multiply_instr;
 
 
 

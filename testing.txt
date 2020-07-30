@@ -1,14 +1,25 @@
-Not tested: add01.s
-Not tested: add02.s
-Not tested: add03.s
-Not tested: add04.s
-Not tested: and01.s
-Not tested: and02.s
-Not tested: b01.s
-Not tested: beq01.s
-Not tested: beq02.s
-Not tested: bne01.s
-Not tested: bne02.s
+Tested: add01.s
+    - Good
+Tested: add02.s
+    - Good
+Tested: add03.s
+    - Good
+Tested: add04.s
+    - Good
+Tested: and01.s
+    - Good
+Tested: and02.s
+    - Good
+Tested: b01.s
+    - Good
+Tested: beq01.s
+    - Good
+Tested: beq02.s
+    - Good
+Tested: bne01.s
+    - Good
+Tested: bne02.s
+    - Fails $r1 is wrong
 Not tested: eor01.s
 Not tested: eor02.s
 Not tested: factorial.s
