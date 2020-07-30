@@ -317,7 +317,7 @@ impl CpuState {
                     //println!("${}:    (0x{:0>8x})", ind, reg);
                 }
             };
-            println!("{}(0x{:0>8x})", identifier, reg);
+            println!("{} {:>12} (0x{:0>8x})", identifier, reg, reg);
         }
     }
 }
