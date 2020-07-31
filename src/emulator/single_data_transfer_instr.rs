@@ -84,14 +84,15 @@ fn compute_offset(cpu: &mut CpuState, instr: &Instruction) -> u16 {
 }
 
 const NUM_REGISTERS: u32 = 17;
-fn execute_single_data_instr(instr: &Instruction, cpu: &mut CpuState) {
+pub fn execute_single_data_instr(instr: &Instruction, cpu: &mut CpuState) {
     let bits = instr.code;
     assert!(transfer_reg_bits![bits] < NUM_REGISTERS as usize);
     let offset: u16 = compute_offset(cpu, instr);
     let address: u32 = compute_address(cpu, instr, offset as u32);
 
     if transfer_type_bit![bits] {
-       let word: u32 = cpu.index_little_endian(cpu.memory[address as usize] as usize);
+       let word: u32 = cpu.index_little_endian(address as usize);
+        cpu.registers[transfer_reg_bits![bits]] = word;
     } else {
         let reg_val: u32 = cpu.registers[transfer_reg_bits![bits]];
         let address = address as usize;

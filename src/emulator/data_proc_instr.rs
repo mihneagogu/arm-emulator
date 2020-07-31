@@ -89,15 +89,25 @@ pub fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
             result = operand1 ^ operand2;
         }
         DataProcOpcode::SUB => {
-            // TODO: fix overflow
-            result = operand1 - operand2;
-            // set c_bit if op2 > op1 (overflow)
-            c_bit = if operand2 > operand1 { 0 } else { 1 };
+            if operand2 > operand1 {
+                // set c_bit if op2 > op1 (overflow)
+                result = u32::MAX - (operand2 - operand1) + 1;
+                c_bit = 0;
+            } else {
+                result = operand1 - operand2;
+                c_bit = 1;
+            }
+            //c_bit = if operand2 > operand1 { 0 } else { 1 };
         }
         DataProcOpcode::RSB => {
-            // TODO: fix overflow
-            result = operand2 - operand1;
-            c_bit = if operand1 > operand2 { 0 } else { 1 };
+            if operand1 > operand2 {
+                result = u32::MAX - (operand1 - operand2) + 1;
+                c_bit = 0;
+            } else {
+                result = operand2 - operand1;
+                c_bit = 1;
+            }
+            //c_bit = if operand1 > operand2 { 0 } else { 1 };
         }
         DataProcOpcode::ADD => {
             // TODO: fix overflow
@@ -105,6 +115,7 @@ pub fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
             // set c_bit if it overflows
             let overflow_check: u64 = (operand1 as u64) + (operand2 as u64);
             c_bit = if overflow_check >= ((1 as u64) << 32) {
+                result = overflow_check as u32 - u32::MAX - 1;
                 1
             } else {
                 0
@@ -121,11 +132,10 @@ pub fn execute_data_processing_instr(instr: &Instruction, cpu: &mut CpuState) {
         DataProcOpcode::CMP => {
             write_result = 0;
             if operand2 > operand1 {
+                result = u32::MAX - (operand2 - operand1) + 1;
                 // overflows so it wraps
-                result = operand2 - operand1;
                 c_bit = 0;
-            }
-            else {
+            } else {
                 c_bit = 1;
                 result = operand1 - operand2;
                 write_result = 0;

@@ -6,10 +6,12 @@ use crate::emulator::branch_instr as branch;
 use crate::emulator::data_proc_instr as data_proc;
 use crate::emulator::em_utilities as util;
 use crate::emulator::multiply_instr as mul;
+use crate::emulator::single_data_transfer_instr as sdt;
 
 use branch::execute_branch_instr;
 use data_proc::execute_data_processing_instr;
 use mul::execute_multiply_instruction;
+use sdt::execute_single_data_instr;
 
 use util::*;
 
@@ -57,6 +59,7 @@ fn execute_instr(instr: &Instruction, cpu: &mut CpuState, pipe: &mut Pipe) -> bo
             true
         },
         InstructionType::SINGLE_DATA_TRANSFER =>  {
+            execute_single_data_instr(instr, cpu);
             pipe.clear_executing();
             true
         },
