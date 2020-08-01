@@ -138,7 +138,6 @@ pub struct Pipe {
 impl Pipe {
     /// The pipeline lag is 8 bytes (aka 2 instructions)
     /// because of the pipeline execution cycle
-    const PIPE_LAG: u8 = 8;
     pub fn init(cpu: &mut CpuState) -> Self {
         cpu.increment_pc();
         Self {

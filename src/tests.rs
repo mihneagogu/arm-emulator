@@ -641,4 +641,668 @@ mod tests {
             ],
         );
     }
+
+    #[test]
+    fn lsl01() {
+        let cpu = emulate("tests/lsl01");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 2), (PC, 16)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0110a0e3),
+                (4, 0x8110a0e1)
+            ],
+        );
+    }
+
+    #[test]
+    fn lsl02() {
+        let cpu = emulate("tests/lsl02");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 0x80000000), (PC, 16)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0xff10a0e3),
+                (4, 0x811fa0e1)
+            ],
+        );
+    }
+
+    #[test]
+    fn mla01() {
+        let cpu = emulate("tests/mla01");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 2), (2, 4), (3, 12), (4, 4), (PC, 24)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0210a0e3),
+                (4, 0x0420a0e3),
+                (8, 0x0440a0e3),
+                (0xc, 0x914223e0)
+            ],
+        );
+    }
+
+    #[test]
+    fn mov01() {
+        let cpu = emulate("tests/mov01");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 1), (PC, 12)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0110a0e3)
+            ],
+        );
+    }
+
+    #[test]
+    fn mov02() {
+        let cpu = emulate("tests/mov02");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 2), (PC, 12)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0210a0e3)
+            ],
+        );
+    }
+
+    #[test]
+    fn mov03() {
+        let cpu = emulate("tests/mov03");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 15), (2, 0xff), (3, 171), (4, 0xcd), (PC, 24)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0f10a0e3),
+                (4, 0xff20a0e3),
+                (8, 0xab30a0e3),
+                (0xc, 0xcd40a0e3)
+            ],
+        );
+    }
+
+    #[test]
+    fn mov04() {
+        let cpu = emulate("tests/mov04");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(2, 0x3f0000), (PC, 12)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x3f28a0e3)
+            ],
+        );
+    }
+
+    #[test]
+    fn mov05() {
+        let cpu = emulate("tests/mov05");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 1), (2, 1), (PC, 16)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0110a0e3),
+                (4, 0x0120a0e1)
+            ],
+        );
+    }
+
+    #[test]
+    fn mov06() {
+        let cpu = emulate("tests/mov06");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(2, 0x28000), (PC, 12)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0a29a0e3)
+            ],
+        );
+    }
+
+    #[test]
+    fn mov07() {
+        let cpu = emulate("tests/mov07");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(0, 0x03000000), (PC, 12)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0304a0e3)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn mul01() {
+        let cpu = emulate("tests/mul01");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 2), (2, 4), (3, 8), (PC, 20)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0210a0e3),
+                (4, 0x0420a0e3),
+                (8, 0x910203e0)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn opt_add05() {
+        let cpu = emulate("tests/opt_add05");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 4), (2, 2), (3, 6), (4, 10), (5, 9), (PC, 28)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0410a0e3),
+                (4, 0x0220a0e3),
+                (8, 0x023081e0),
+                (0xc, 0x44083e2),
+                (0x10, 0x335244e0)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn opt_ldr10() {
+        let cpu = emulate("tests/opt_ldr10");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 12), (2, 10), (3, 14), (4, 0x5122e593), (5, 0x5122e593), (PC, 28)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0c10a0e3),
+                (4, 0x0a20a0e3),
+                (8, 0x0e30a0e3),
+                (0xc, 0x004093e5),
+                (0x10, 0x225191e7)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn or01() {
+        let cpu = emulate("tests/or01");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(2, 171), (PC, 16)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0010a0e3),
+                (4, 0xab2081e3)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn or02() {
+        let cpu = emulate("tests/or02");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 15), (2, 171), (3, 175), (PC, 20)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0f10a0e3),
+                (4, 0xab20a0e3),
+                (8, 0x023081e1)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn rsb01() {
+        let cpu = emulate("tests/rsb01");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 2), (2, 0xffffffff), (PC, 16)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0210a0e3),
+                (4, 0x012061e2)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn rsb02() {
+        let cpu = emulate("tests/rsb02");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 0xff), (PC, 16)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0xff10a0e3),
+                (4, 0xff2061e2)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn rsb03() {
+        let cpu = emulate("tests/rsb03");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 0xff), (PC, 16)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0xff10a0e3),
+                (4, 0x012061e0)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn str01() {
+        let cpu = emulate("tests/str01");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(0, 0x20200000), (PC, 16)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x04009fe5),
+                (4, 0x1c0081e5),
+                (0xc, 0x00002020),
+                (0x1c, 0x00002020)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn str02() {
+        let cpu = emulate("tests/str02");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 2), (2, 5), (4, 1), (PC, 24)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0140a0e3),
+                (4, 0x02000000),
+                (8, 0x0210a0e3),
+                (0xc, 0x041082e6)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn str03() {
+        let cpu = emulate("tests/str03");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(0, 1), (1, 99), (PC, 40), (CPSR, 0x60000000)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0220a0e3),
+                (4, 0x63000000),
+                (8, 0x63630000),
+                (0xc, 0x001080e5),
+                (0x10, 0x012042e2),
+                (0x14, 0x000052e3),
+                (0x18, 0x081080e5),
+                (0x1c, 0xfbffff1a)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn str04() {
+        let cpu = emulate("tests/str04");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 35), (2, 4), (4, 1), (PC, 24)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0140a0e3),
+                (4, 0x04230000),
+                (8, 0x0010a0e3),
+                (0xc, 0x041082e7)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn sub01() {
+        let cpu = emulate("tests/sub01");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 2), (2, 1), (PC, 16)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0210a0e3),
+                (4, 0x012041e2)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn sub02() {
+        let cpu = emulate("tests/sub02");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 0xff), (PC, 16)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0xff10a0e3),
+                (4, 0xff2041e2)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn sub03() {
+        let cpu = emulate("tests/sub03");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 0xff), (PC, 16)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0xff10a0e3),
+                (4, 0x012041e0)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn tst01() {
+        let cpu = emulate("tests/tst01");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 1), (2, 2), (4, 4), (PC, 32), (CPSR, 0x40000000)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0110a0e3),
+                (4, 0x0220a0e3),
+                (8, 0x020011e1),
+                (0xc, 0x0000000a),
+                (0x10, 0x0330a0e3),
+                (0x14, 0x0440a0e3)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn tst02() {
+        let cpu = emulate("tests/tst02");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 1), (2, 1), (3, 3), (4, 4), (PC, 32)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0110a0e3),
+                (4, 0x0120a0e3),
+                (8, 0x020011e1),
+                (0xc, 0x0000000a),
+                (0x10, 0x0330a0e3),
+                (0x14, 0x0440a0e3)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn tst03() {
+        let cpu = emulate("tests/tst03");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 1), (2, 23), (4, 4), (PC, 32)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0110a0e3),
+                (4, 0x1720a0e3),
+                (8, 0x020011e1),
+                (0xc, 0x000000ea),
+                (0x10, 0x0330a0e3),
+                (0x14, 0x0440a0e3)
+            ],
+
+        );
+    }
+
+    #[test]
+    fn tst04() {
+        let cpu = emulate("tests/tst04");
+        assert!(cpu.is_ok());
+        let mut cpu = cpu.unwrap();
+        let registers_special = vec![(1, 1), (2, 23), (4, 4), (PC, 32)];
+
+        let mut expected = CpuState {
+            registers: reg_from(registers_special),
+            memory: mem_empty![],
+        };
+        registers_eq(&mut cpu, &mut expected);
+        memory_eq(
+            &mut cpu,
+            vec![
+                (0, 0x0110a0e3),
+                (4, 0x1720a0e3),
+                (8, 0x020011e1),
+                (0xc, 0x000000ea),
+                (0x10, 0x0330a0e3),
+                (0x14, 0x0440a0e3)
+            ],
+
+        );
+    }
 }

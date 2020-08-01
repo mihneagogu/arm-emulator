@@ -29,13 +29,13 @@ fn main() -> Result<(), std::io::Error> {
 
     match task_description {
         Task::Emulate(path) => emulate(path),
-        Task::Assemble { asm_path, out_path } => assemble(asm_path, out_path),
+        // Initially wanted to support asm -> binary 
+        // but I'm not sure if I'll bother implementing that.
+        // Just leaving the emulator for now
+        Task::Assemble { asm_path, out_path } => Ok(())
     }
 }
 
-fn assemble(asm_path: &str, out_path: &str) -> Result<(), std::io::Error> {
-    Ok(())
-}
 
 /// Reads an emulator binary file which contains lines of u32 
 /// and produces the required output
